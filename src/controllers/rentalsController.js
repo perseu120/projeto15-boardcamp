@@ -1,5 +1,6 @@
 import joi from "joi";
 import connection from "../database/db.js";
+import dayjs from "dayjs";
 
 
 
@@ -77,13 +78,6 @@ export async function setRentals(req, res){//falta verificar quantos tem disponi
         delayFee: null  
     }
 
-    // const {rows: dadosForRentals} =  await connection.query(`SELECT * FROM rentals r
-    //     JOIN customers c
-    //     ON r."customerId" = c.id
-    //     JOIN games g
-    //     ON r."gameId" = g.id
-    // `)
-
     const {
         rentDate,
         returnDate,
@@ -99,8 +93,20 @@ export async function setRentals(req, res){//falta verificar quantos tem disponi
 
 }
 
-export async function setRentalsDevolution(req, res){
-    console.log('estou no set de devolução de alugeis');
+export async function setRentalsDevolution(req, res){//falta fazer as validações e as query String
+    
+    const {id} = req.params;
+
+    const {rows:dataRentals } = await connection.query(`SELECT "rentDate", "gameId" FROM rentals r WHERE r.id = $1`,[id]);
+    const {rows:pricePerDay} = await connection.query(`SELECT "pricePerDay" FROM games WHERE id = $1`, [dataRentals[0].gameId]);
+
+    const DiferencaDatasInicioFim = dayjs().diff(dataRentals[0].dataRentals,'day');
+    const valorAtrasado = Math.abs(DiferencaDatasInicioFim) * pricePerDay[0].pricePerDay
+    
+    connection.query(`UPDATE rentals SET "returnDate" = $2, "delayFee" = $3 WHERE id = $1`, [id, new Date(), valorAtrasado]);
+
+    res.sendStatus(200);
+
 }
 
 export async function deleteRentals(req, res){
