@@ -99,7 +99,7 @@ export async function setRentals(req, res){//falta verificar quantos tem disponi
 
 }
 
-export async function setRentalsDevolution(){
+export async function setRentalsDevolution(req, res){
     console.log('estou no set de devolução de alugeis');
 }
 
